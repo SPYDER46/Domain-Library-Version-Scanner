@@ -1,0 +1,6 @@
+Flask
+requests
+python-Wappalyzer
+beautifulsoup4
+cryptography
+setuptools

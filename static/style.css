@@ -1,0 +1,98 @@
+/* ===== Global ===== */
+body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ===== Title ===== */
+h2 {
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* ===== Card Styling ===== */
+.card {
+    background: #1e293b !important;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0, 255, 150, 0.08);
+    transition: 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 25px rgba(0, 255, 150, 0.2);
+}
+
+/* ===== Input Field ===== */
+.form-control {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #ffffff;
+}
+
+.form-control:focus {
+    background: #0f172a;
+    color: white;
+    border-color: #00ff9d;
+    box-shadow: 0 0 8px rgba(0, 255, 157, 0.5);
+}
+
+/* ===== Button ===== */
+.btn-primary {
+    background: linear-gradient(45deg, #00ff9d, #00c3ff);
+    border: none;
+    font-weight: 600;
+    color: #000;
+    transition: 0.3s ease;
+}
+
+.btn-primary:hover {
+    opacity: 0.85;
+    transform: scale(1.05);
+}
+
+/* ===== Lists ===== */
+ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+ul li {
+    padding: 6px 10px;
+    border-bottom: 1px solid #334155;
+    font-size: 14px;
+}
+
+/* ===== Status Indicators ===== */
+.text-danger {
+    color: #ff4d4d !important;
+    font-weight: bold;
+}
+
+.text-success {
+    color: #00ff9d !important;
+    font-weight: bold;
+}
+
+/* ===== Scan History ===== */
+.mt-5 ul li {
+    background: #162036;
+    margin-bottom: 5px;
+    padding: 8px;
+    border-radius: 6px;
+    transition: 0.2s ease;
+}
+
+.mt-5 ul li:hover {
+    background: #1e293b;
+}
+
+/* ===== Footer (Optional) ===== */
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 13px;
+    color: #64748b;
+}
