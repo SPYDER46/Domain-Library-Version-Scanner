@@ -6,7 +6,10 @@ from scanner import (
     get_ssl_info,
     detect_waf,
     calculate_risk,
-    lookup_cves
+    lookup_cves,
+    scan_dirs,
+    crawl_urls,
+    scan_vulnerabilities
 )
 
 app = Flask(__name__)
@@ -25,13 +28,25 @@ def index():
         parsed_url = urlparse(domain)
         hostname = parsed_url.netloc
 
+        # Existing scans
         tech = detect_technologies(domain)
         headers = check_security_headers(domain)
         ssl_info = get_ssl_info(hostname)
-
         waf = detect_waf(domain)
         risk = calculate_risk(headers, ssl_info, tech)
         cves = lookup_cves(tech)
+
+        # NEW FEATURE: Directory Scan
+        dirs = scan_dirs(domain)
+        urls = crawl_urls(domain)
+
+        # Include discovered directories
+        for d in dirs:
+            if "url" in d:
+                urls.append(d["url"])
+
+        urls = list(set(urls))
+        vulns = scan_vulnerabilities(urls)
 
         results = {
             "domain": domain,
@@ -40,12 +55,16 @@ def index():
             "ssl": ssl_info,
             "waf": waf,
             "risk": risk,
-            "cves": cves
-          }
+            "cves": cves,
+            "directories": dirs,
+            "urls": urls,
+            "vulnerabilities": vulns
+        }
 
         scan_history.append(results)
 
     return render_template("index.html", results=results, history=scan_history)
+    
 
 if __name__ == "__main__":
     app.run(debug=True)

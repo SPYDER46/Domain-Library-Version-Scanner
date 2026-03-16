@@ -1,4 +1,7 @@
 import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+from concurrent.futures import ThreadPoolExecutor
 import ssl
 import socket
 from datetime import datetime
@@ -128,7 +131,7 @@ def calculate_risk(headers, ssl_info, technologies):
 
 
 # ----------------------------
-# Basic CVE Lookup (NVD API)
+# CVE Lookup (NVD API)
 # ----------------------------
 def lookup_cves(technologies):
     cve_results = {}
@@ -150,3 +153,143 @@ def lookup_cves(technologies):
                 cve_results[f"{tech} {version}"] = "Lookup Failed"
 
     return cve_results
+
+# ----------------------------
+# Advanced Directory Scanner
+# ----------------------------
+WORDLIST_URL = "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/raft-large-directories.txt"
+
+def scan_dirs(base_url, max_depth=2, max_workers=50):
+    """
+    Scan directories recursively with multi-threading.
+    max_depth: how deep to crawl subdirs
+    """
+    found = []
+    visited = set()
+
+    try:
+        wordlist = requests.get(WORDLIST_URL, timeout=15).text.splitlines()
+        wordlist = wordlist[:5000]  # limit for speed
+    except:
+        return [{"error": "Wordlist download failed"}]
+
+    def scan(url, depth):
+        if url in visited or depth > max_depth:
+            return
+        visited.add(url)
+
+        for path in wordlist:
+            full_url = urljoin(url + "/", path)
+            try:
+                r = requests.get(full_url, timeout=5, allow_redirects=False)
+                if r.status_code in [200, 301, 302, 403]:
+                    found.append({"url": full_url, "status": r.status_code})
+                    if depth < max_depth:
+                        scan(full_url, depth + 1)
+            except:
+                continue
+
+    # Use multi-threading for top-level scan
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        executor.map(lambda p: scan(base_url, 1), [base_url])
+
+    return found
+
+def crawl_urls(base_url, limit=200):
+
+    visited = set()
+    urls = set()
+
+    try:
+
+        response = requests.get(base_url, timeout=10)
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # Scan <a> links
+        for link in soup.find_all("a", href=True):
+
+            url = urljoin(base_url, link["href"])
+
+            if base_url in url:
+                urls.add(url)
+
+        # Scan forms
+        for form in soup.find_all("form"):
+
+            action = form.get("action")
+
+            if action:
+                url = urljoin(base_url, action)
+
+                if base_url in url:
+                    urls.add(url)
+
+        # Scan scripts
+        for script in soup.find_all("script", src=True):
+
+            url = urljoin(base_url, script["src"])
+
+            if base_url in url:
+                urls.add(url)
+
+    except:
+        pass
+
+    return list(urls)[:limit]
+
+# ----------------------------
+# Vulnerability Scanner (Top OWASP)
+# ----------------------------
+def scan_vulnerabilities(urls):
+    """
+    Scan a list of URLs for simple vulnerabilities:
+    SQLi, XSS, LFI, RCE (basic detection)
+    """
+    vulnerabilities = []
+
+    # simple payloads
+    sql_payload = "' OR '1'='1"
+    xss_payload = "<script>alert('XSS')</script>"
+    lfi_payload = "../../etc/passwd"
+
+    sql_errors = [
+        "sql syntax",
+        "mysql",
+        "syntax error",
+        "unclosed quotation mark",
+        "pdoexception",
+        "odbc"
+    ]
+
+    for url in urls:
+        try:
+            # --- SQL Injection Check ---
+            r = requests.get(url + sql_payload, timeout=5)
+            for error in sql_errors:
+                if error in r.text.lower():
+                    vulnerabilities.append({
+                        "url": url,
+                        "vuln": "Possible SQL Injection"
+                    })
+                    break
+
+            # --- XSS Check ---
+            r = requests.get(url + "?test=" + xss_payload, timeout=5)
+            if xss_payload.lower() in r.text.lower():
+                vulnerabilities.append({
+                    "url": url,
+                    "vuln": "Possible XSS"
+                })
+
+            # --- LFI Check ---
+            r = requests.get(url + "?file=" + lfi_payload, timeout=5)
+            if "root:" in r.text or "bin/bash" in r.text:
+                vulnerabilities.append({
+                    "url": url,
+                    "vuln": "Possible LFI"
+                })
+
+        except:
+            continue
+
+    return vulnerabilities

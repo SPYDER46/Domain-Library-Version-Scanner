@@ -1,180 +1,310 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Library Version Scanner</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>BUG FREE Scanner</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+
+body{
+background:#f5f7fb;
+}
+
+.card{
+border-radius:12px;
+}
+
+.section-title{
+font-weight:600;
+margin-top:20px;
+}
+
+.url-box{
+font-size:14px;
+word-break:break-all;
+}
+
+</style>
+
 </head>
 
-<body class="bg-light">
+<body>
 
-<div class="container mt-5 mb-5">
+<div class="container py-5">
 
-    <div class="row justify-content-center mt-5 mb-5">
-    <div class="col-md-8 col-lg-6">
+<!-- Header -->
 
-           <div class="text-center mb-4">
-        <h2 class="fw-bold">Domain Library & Version Scanner</h2>
-        <p class="text-muted">Developed by <b>BUG FREE</b></p>
-    </div>
+<div class="text-center mb-5">
 
-        <form method="POST">
-            <div class="input-group input-group-lg shadow rounded-4 overflow-hidden">
-                <input type="text"
-                       class="form-control border-0"
-                       name="domain"
-                       placeholder="Enter domain (example.com)"
-                       required>
-                <button class="btn btn-primary px-5">
-                    Scan
-                </button>
-            </div>
-        </form>
+<h2 class="fw-bold">BUG FREE</h2>
 
-    </div>
+<p class="text-muted">Automated Security Scanner Dashboard</p>
+
+<form method="POST">
+
+<div class="input-group input-group-lg shadow">
+
+<input
+type="text"
+class="form-control"
+name="domain"
+placeholder="Enter domain (example.com)"
+required>
+
+<button class="btn btn-primary">
+Scan
+</button>
+
 </div>
 
-    {% if results %}
+</form>
 
-    <div class="card shadow-lg border-0">
-        <div class="card-body">
+</div>
 
-            <h4 class="mb-3">Scan Results for 
-                <span class="text-primary">{{ results.domain }}</span>
-            </h4>
 
-            <hr>
+{% if results %}
 
-            <!-- Technologies -->
-            <h5>Technologies Detected</h5>
+<!-- DOMAIN HEADER -->
 
-            {% if "Error" in results.technologies %}
-                <div class="alert alert-danger">
-                    {{ results.technologies["Error"] }}
-                </div>
-            {% else %}
-                <ul class="list-group mb-3">
-                    {% for tech, version in results.technologies.items() %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ tech }}
-                            <span class="badge bg-primary rounded-pill">
-                                {{ version if version else "Unknown" }}
-                            </span>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+<div class="card shadow mb-4">
+<div class="card-body">
 
-            <hr>
+<h4>
+Scan Results for
+<span class="text-primary">{{ results.domain }}</span>
+</h4>
 
-            <!-- Security Headers -->
-            <h5>Security Headers</h5>
+</div>
+</div>
 
-            {% if "Error" in results.headers %}
-                <div class="alert alert-danger">
-                    {{ results.headers["Error"] }}
-                </div>
-            {% else %}
-                <ul class="list-group mb-3">
-                    {% for header, value in results.headers.items() %}
-                        <li class="list-group-item d-flex justify-content-between">
-                            {{ header }}
 
-                            {% if value == "Missing" %}
-                                <span class="badge bg-danger">Missing</span>
-                            {% else %}
-                                <span class="badge bg-success">Present</span>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+<!-- TECHNOLOGIES -->
 
-            <hr>
+<div class="card shadow mb-4">
+<div class="card-body">
 
-            <!-- SSL Certificate -->
-            <h5>SSL Certificate</h5>
+<h5 class="section-title">Detected Technologies</h5>
 
-            {% if "Error" in results.ssl %}
-                <div class="alert alert-warning">
-                    {{ results.ssl["Error"] }}
-                </div>
-            {% else %}
-                <ul class="list-group mb-3">
-                    {% for key, value in results.ssl.items() %}
-                        <li class="list-group-item">
-                            <strong>{{ key.replace("_"," ").title() }}</strong> :
-                            {{ value }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+<ul class="list-group">
 
-            <hr>
+{% for tech, version in results.technologies.items() %}
 
-            <!-- WAF Detection -->
-            <h5>WAF Detection</h5>
-            <ul class="list-group mb-3">
-                {% for item in results.waf %}
-                    <li class="list-group-item">{{ item }}</li>
-                {% endfor %}
-            </ul>
+<li class="list-group-item d-flex justify-content-between">
 
-            <hr>
+{{ tech }}
 
-            <!-- Risk Score -->
-            <h5>Overall Security Score</h5>
+<span class="badge bg-primary">
+{{ version if version else "Unknown" }}
+</span>
 
-            <div class="progress mb-3" style="height: 25px;">
-                <div class="progress-bar 
-                    {% if results.risk >= 80 %}
-                        bg-success
-                    {% elif results.risk >= 50 %}
-                        bg-warning
-                    {% else %}
-                        bg-danger
-                    {% endif %}
-                    progress-bar-striped progress-bar-animated"
-                    role="progressbar"
-                    style="width: {{ results.risk }}%">
-                    {{ results.risk }}/100
-                </div>
-            </div>
+</li>
 
-            <hr>
+{% endfor %}
 
-            <!-- CVE Lookup -->
-            <h5>CVE Lookup</h5>
+</ul>
 
-            {% if results.cves %}
-                <ul class="list-group">
-                    {% for tech, count in results.cves.items() %}
-                        <li class="list-group-item d-flex justify-content-between">
-                            {{ tech }}
+</div>
+</div>
 
-                            {% if count == "Lookup Failed" or count == "API Error" %}
-                                <span class="badge bg-warning">{{ count }}</span>
 
-                            {% elif count|int > 0 %}
-                                <span class="badge bg-danger">
-                                    {{ count }} CVEs Found
-                                </span>
+<!-- SECURITY HEADERS -->
 
-                            {% else %}
-                                <span class="badge bg-success">
-                                    No Known CVEs
-                                </span>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-muted">No version data available for CVE lookup.</p>
-            {% endif %}
+<div class="card shadow mb-4">
+<div class="card-body">
 
-        </div>
-    </div>
+<h5 class="section-title">Security Headers</h5>
 
-    {% endif %}
+<ul class="list-group">
+
+{% for header, value in results.headers.items() %}
+
+<li class="list-group-item d-flex justify-content-between">
+
+{{ header }}
+
+{% if value == "Missing" %}
+<span class="badge bg-danger">Missing</span>
+{% else %}
+<span class="badge bg-success">Present</span>
+{% endif %}
+
+</li>
+
+{% endfor %}
+
+</ul>
+
+</div>
+</div>
+
+
+<!-- SSL -->
+
+<div class="card shadow mb-4">
+<div class="card-body">
+
+<h5 class="section-title">SSL Certificate</h5>
+
+<ul class="list-group">
+
+{% for key, value in results.ssl.items() %}
+
+<li class="list-group-item">
+
+<strong>{{ key.replace("_"," ").title() }}</strong> :
+{{ value }}
+
+</li>
+
+{% endfor %}
+
+</ul>
+
+</div>
+</div>
+
+
+<!-- WAF -->
+
+<div class="card shadow mb-4">
+<div class="card-body">
+
+<h5 class="section-title">WAF Detection</h5>
+
+<ul class="list-group">
+
+{% for item in results.waf %}
+<li class="list-group-item">{{ item }}</li>
+{% endfor %}
+
+</ul>
+
+</div>
+</div>
+
+
+<!-- DIRECTORY SCAN -->
+
+<div class="card shadow mb-4">
+<div class="card-body">
+
+<h5 class="section-title">Discovered Directories</h5>
+
+{% if results.directories %}
+
+<ul class="list-group">
+
+{% for d in results.directories %}
+
+<li class="list-group-item d-flex justify-content-between url-box">
+
+{{ d.url }}
+
+<span class="badge
+{% if d.status == 200 %}
+bg-danger
+{% elif d.status == 403 %}
+bg-warning
+{% else %}
+bg-info
+{% endif %}
+">
+
+{{ d.status }}
+
+</span>
+
+</li>
+
+{% endfor %}
+
+</ul>
+
+{% else %}
+
+<p class="text-muted">No directories discovered</p>
+
+{% endif %}
+
+</div>
+</div>
+
+
+<!-- CRAWLED URLS -->
+
+<div class="card shadow mb-4">
+<div class="card-body">
+
+<h5 class="section-title">Crawled URLs</h5>
+
+{% if results.urls %}
+
+<ul class="list-group">
+
+{% for url in results.urls %}
+
+<li class="list-group-item url-box">
+{{ url }}
+</li>
+
+{% endfor %}
+
+</ul>
+
+{% else %}
+
+<p class="text-muted">No URLs discovered</p>
+
+{% endif %}
+
+</div>
+</div>
+
+
+<!-- VULNERABILITIES -->
+
+<div class="card shadow mb-4">
+<div class="card-body">
+
+<h5 class="section-title text-danger">
+Detected Vulnerabilities
+</h5>
+
+{% if results.vulnerabilities %}
+
+<ul class="list-group">
+
+{% for v in results.vulnerabilities %}
+
+<li class="list-group-item d-flex justify-content-between url-box">
+
+{{ v.url }}
+
+<span class="badge bg-danger">
+
+{{ v.vuln }}
+
+</span>
+
+</li>
+
+{% endfor %}
+
+</ul>
+
+{% else %}
+
+<p class="text-success">
+No vulnerabilities detected
+</p>
+
+{% endif %}
+
+</div>
+</div>
+
+{% endif %}
 
 </div>
 
